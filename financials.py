@@ -8,7 +8,6 @@ import streamlit as st
 # Load API key from .env
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
-client = openai.OpenAI()
 
 def fetch_annual_report(stock_symbol):
     """Fetch annual financial statements from Yahoo Finance (converted to ₹ INR)."""
@@ -27,9 +26,9 @@ def fetch_annual_report(stock_symbol):
 
         # Convert data to readable format
         data = {
-            "Income Statement": financials.to_string(),
-            "Balance Sheet": balance_sheet.to_string(),
-            "Cash Flow Statement": cash_flow.to_string()
+            "Income Statement": financials.to_string() if not financials.empty else "Data not available",
+            "Balance Sheet": balance_sheet.to_string() if not balance_sheet.empty else "Data not available",
+            "Cash Flow Statement": cash_flow.to_string() if not cash_flow.empty else "Data not available",
         }
         return data
     except Exception as e:
@@ -76,18 +75,21 @@ def generate_prompt(stock_symbol, financial_data):
 
 def get_openai_analysis(prompt):
     """Fetches AI-generated financial analysis from OpenAI's GPT model."""
-    if openai.api_key is None:
+    if not openai.api_key:
         return "❌ ERROR: OpenAI API Key not found. Check your .env file."
     
-    response = client.chat.completions.create(  # Use the new OpenAI v1 API
-    model="gpt-3.5-turbo",
-    messages=[
-        {"role": "system", "content": "You are a financial analyst."},
-        {"role": "user", "content": financial_prompt}
-    ]
-)
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a financial analyst."},
+                {"role": "user", "content": prompt}
+            ]
+        )
+        return response.choices[0].message["content"]
     
-    return response["choices"][0]["message"]["content"]
+    except Exception as e:
+        return f"❌ OpenAI API Error: {e}"
 
 def main():
     stock_symbol = input("Enter the stock symbol (e.g., RELIANCE.NS): ").strip().upper()
