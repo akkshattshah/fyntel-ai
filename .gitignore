@@ -1,0 +1,11 @@
+# Ignore environment variables
+.env
+
+# Ignore Python cache files
+__pycache__/
+
+# Ignore logs and database files
+*.log
+
+fitest.py
+ 
