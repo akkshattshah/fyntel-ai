@@ -3,10 +3,12 @@ import openai
 import yfinance as yf
 import pandas as pd
 from dotenv import load_dotenv
+import streamlit as st
 
 # Load API key from .env
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI()
 
 def fetch_annual_report(stock_symbol):
     """Fetch annual financial statements from Yahoo Finance (converted to ₹ INR)."""
@@ -77,11 +79,13 @@ def get_openai_analysis(prompt):
     if openai.api_key is None:
         return "❌ ERROR: OpenAI API Key not found. Check your .env file."
     
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[{"role": "system", "content": "You are a financial analyst."},
-                  {"role": "user", "content": prompt}]
-    )
+    response = client.chat.completions.create(  # Use the new OpenAI v1 API
+    model="gpt-3.5-turbo",
+    messages=[
+        {"role": "system", "content": "You are a financial analyst."},
+        {"role": "user", "content": financial_prompt}
+    ]
+)
     
     return response["choices"][0]["message"]["content"]
 
