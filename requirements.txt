@@ -1,1 +1,5 @@
--e "streamlit\nopenai\nyfinance\npandas\npython-dotenv" 
+streamlit
+openai
+yfinance
+pandas
+python-dotenv
